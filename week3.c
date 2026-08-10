@@ -92,3 +92,32 @@ int main() {
 
     return 0;
 }
+
+// 01. Parse inputs into temp variables
+int temp_id = 101; 
+float temp_score = 85.0;
+
+// 02. Validate field rules
+if (temp_id <= 0 || temp_score < 0 || temp_score > 100) {
+    printf("Rejected: Invalid fields.\n");
+    return; 
+}
+
+// 03. Search for duplicate ID
+for (int i = 0; i < count; i++) {
+    if (list[i].id == temp_id) {
+        printf("Rejected: Duplicate ID!\n");
+        return; // Reject before touching array
+    }
+}
+
+// 04. Check available capacity
+if (count >= MAX) {
+    printf("Rejected: Array is full!\n");
+    return; 
+}
+
+// 05. Commit record; size++
+list[count].id = temp_id;
+list[count].score = temp_score;
+count++; // Increment size only after all checks pass!
