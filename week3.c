@@ -121,3 +121,33 @@ if (count >= MAX) {
 list[count].id = temp_id;
 list[count].score = temp_score;
 count++; // Increment size only after all checks pass!
+
+
+FILE *file = fopen("students.txt", "r"); // 01. OPEN
+if (file == NULL) return; 
+
+char line[100];
+// 02. READ line by line
+while (fgets(line, sizeof(line), file) != NULL) { 
+    int temp_id;
+    char temp_name[30];
+    float temp_score;
+
+    // 03. PARSE
+    if (sscanf(line, "%d,%29[^,],%f", &temp_id, temp_name, &temp_score) != 3) {
+        continue; // Bad format? Skip line!
+    }
+
+    // 04. VALIDATE (Rules + Duplicates)
+    if (temp_score < 0 || temp_score > 100 || isDuplicate(list, count, temp_id)) {
+        continue; // Invalid or duplicate? Skip line!
+    }
+
+    // 05. COMMIT
+    list[count].id = temp_id;
+    strncpy(list[count].name, temp_name, sizeof(list[count].name) - 1);
+    list[count].score = temp_score;
+    count++;
+}
+
+fclose(file); // 06. CLOSE
