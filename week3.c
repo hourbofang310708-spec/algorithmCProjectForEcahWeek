@@ -151,3 +151,93 @@ while (fgets(line, sizeof(line), file) != NULL) {
 }
 
 fclose(file); // 06. CLOSE
+#include <stdio.h>
+
+#define MAX_STUDENTS 100
+
+typedef struct {
+    int id;
+    char name[30];
+    float score;
+}Student;
+
+int isDuplicateID(const Student list[], int count, int target_id){
+    for ( int i = 0; i < count; i ++){
+        if ( list[i].id == target_id){
+            return 1; // For duplicate found, we return 1
+        }
+    }
+    return 0; //if id is unique, 0
+}
+void loadStudents(Student list[], int *count, const char *filename){
+    FILE *file = fopen(filename, "r");
+
+    if (file == NULL){
+        printf("Could not open the file: %s\n ", filename);
+      
+      return;
+    }
+    char line[128];
+    int loaded_records = 0;
+    int skipped_records = 0;
+
+    while ( fgets(line, sizeof(line), file) != NULL){
+        if ( line[0] == '#'|| line[0] == '\n'|| line[0] == '\r'){
+            continue;
+        }
+        int temp_id;
+        char temp_name[30];
+        float temp_score;
+
+        // Check with the structure 
+    
+        int parsed = sscanf(line, "%d|%29[^|]|%f", &temp_id, &temp_name, &temp_score);
+        if (parsed != 3){
+            skipped_records++;// this will be useful later.
+            continue;
+        }
+        // check with the positive id.
+        if(temp_id <= 0){
+            skipped_records++;
+            continue;
+        }
+        // check the valid score
+        if (temp_score<0.0f || temp_score>100.0f){
+            skipped_records++;
+            continue;
+        }
+        // Check for duplicate
+        if (isDuplicateID(list, *count, temp_id)){
+            skipped_records++;
+            continue;
+        }
+        //check for capacity if it is limit or not
+        if ( *count >= MAX_STUDENTS ){
+            printf("Array capacity is full. Stop reading the next lines. \n");
+            break;
+        }
+
+        //since we have checked all the condition. we are now can commit
+
+        list[*count].id = temp_id;
+        strncyp(list[*count].name, temp_name, sizeof(list[*count].name)-1);
+        list[*count].name[sizeof(list[*count].name)-1] = '\0';
+        list[*count].score = temp_score;
+        (*count)++;
+        loaded_records++;
+    }
+fclose(file);
+printf("[SUCCESS] Loaded %d valid record(s). Skipped %d invalid line(s).\n", 
+           loaded_records, skipped_records);
+}
+
+void displayALL(Student list[], int * count){
+    if ( *count == 0){
+        printf("Nothing inside the file.\n");
+        return;
+    }
+    printf("ID\tName\t\tScore\n");
+    for ( int i = 0; i < count ; i++){
+        printf("%d|%c|%.1f\n ", list[i].id , list[i].name, list[i].score);
+    }
+}
