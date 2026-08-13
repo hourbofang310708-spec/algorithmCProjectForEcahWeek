@@ -241,3 +241,4 @@ void displayALL(Student list[], int * count){
         printf("%d|%c|%.1f\n ", list[i].id , list[i].name, list[i].score);
     }
 }
+//This code is the process of slide 10 which is the process of testing and is easier for testing paths. 
