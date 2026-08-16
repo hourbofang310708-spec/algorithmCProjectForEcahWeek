@@ -517,6 +517,68 @@ int main(void) {
 }
 
 
+#include <stdio.h>
+#include <string.h>
+
+// This is our data package structure
+typedef struct {
+    int id;
+    char name[30];
+    float score;
+} Student;
+
+// The function that runs the 5-step safe save process
+int safe_save_database(Student records[], int size) {
+    
+    // --- STEP 1: OPEN TEMPORARY OUTPUT ---
+    // Open a blank temp file with "w" mode. The original file is untouched!
+    FILE *temp_fp = fopen("temp_students.txt", "w");
+    if (temp_fp == NULL) {
+        printf("Error: Could not create temporary file!\n");
+        return 0; // Stop immediately. Safety preserved.
+    }
+
+    // --- STEP 2 & 3: WRITE ALL RECORDS & CHECK FPRINTF RESULT ---
+    // Loop through every single student sitting in active memory
+    for (int i = 0; i < size; i++) {
+        
+        // fprintf prints the active memory data into the temp file
+        int result = fprintf(temp_fp, "%d|%s|%.1f\n", 
+                             records[i].id, 
+                             records[i].name, 
+                             records[i].score);
+        
+        // Check if fprintf failed (returns a negative number if out of space or disconnected)
+        if (result < 0) {
+            printf("Error: Disk is full or writing broken mid-sentence!\n");
+            fclose(temp_fp);            // Close the broken temp file door
+            remove("temp_students.txt"); // Throw away the corrupted temp file
+            return 0;                   // Exit. Original data is still 100% safe.
+        }
+    }
+
+    // --- STEP 4: CLOSE AND CHECK FCLOSE ---
+    // Lock the temporary file door securely
+    if (fclose(temp_fp) != 0) {
+        printf("Error: Temporary file failed to close correctly!\n");
+        remove("temp_students.txt"); // Throw away temp file if lock fails
+        return 0;
+    }
+
+    // --- STEP 5: REPLACE ORIGINAL ONLY AFTER SUCCESS ---
+    // If we made it here, the temporary file is 100% perfect and complete.
+    
+    // Delete the old file permanently
+    remove("students.txt"); 
+    
+    // Rename the perfect temp file to become the official database file
+    rename("temp_students.txt", "students.txt");
+
+    printf("Success: Database updated safely!\n");
+    return 1; // Return 1 to show complete victory
+}
+
+
 
 
    
