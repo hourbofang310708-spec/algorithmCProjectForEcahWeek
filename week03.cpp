@@ -733,3 +733,66 @@ FINAL TEST-RESULTS TABLE
 | T10     | Reload output.txt     | Equal to state pre-save| Equivalence Match      | Pass  | Pre/Post arrays match identically |
 ================================================================================
 */
+#include <iostream>
+#include <cstdio>  // Allows us to use remove and rename
+#include <cstring> // Allows us to work with strings easily
+
+using namespace std; // Added at the top just like your school exercises!
+
+// Our data package structure
+struct Student {
+    int id;
+    char name[30]; // Traditional character array from C
+    float score;
+};
+
+// The function that runs the 5-step safe save process
+bool safeSaveDatabase(Student records[], int size) {
+    
+    // --- STEP 1: OPEN TEMPORARY OUTPUT ---
+    // We use standard fopen just like C!
+    FILE *temp_fp = fopen("temp_students.txt", "w");
+    if (temp_fp == NULL) {
+        cout << "Error: Could not create temporary file!\n";
+        return false; // Stop immediately. 
+    }
+
+    // --- STEP 2 & 3: WRITE ALL RECORDS & CHECK FPRINTF RESULT ---
+    // Loop through every single student in active memory
+    for (int i = 0; i < size; i++) {
+        
+        // We use fprintf! It prints the data straight into the temp file.
+        int result = fprintf(temp_fp, "%d|%s|%.1f\n", 
+                             records[i].id, 
+                             records[i].name, 
+                             records[i].score);
+        
+        // Check if fprintf broke mid-sentence
+        if (result < 0) {
+            cout << "Error: Disk is full or writing broken!\n";
+            fclose(temp_fp);            
+            remove("temp_students.txt"); 
+            return false; // Exit early. Original data is safe!
+        }
+    }
+
+    // --- STEP 4: CLOSE AND CHECK FCLOSE ---
+    // Lock the temporary file door securely
+    if (fclose(temp_fp) != 0) {
+        cout << "Error: Temporary file failed to close correctly!\n";
+        remove("temp_students.txt"); 
+        return false;
+    }
+
+    // --- STEP 5: REPLACE ORIGINAL ONLY AFTER SUCCESS ---
+    // If we reach this line, temp_students.txt is verified 100% perfect.
+    
+    // Delete the old file permanently
+    remove("students.txt"); 
+    
+    // Rename the perfect temp file to become the official database file
+    rename("temp_students.txt", "students.txt");
+
+    cout << "Success: Database updated safely!\n";
+    return true; // Complete victory!
+}
